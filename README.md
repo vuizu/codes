@@ -1,2 +1,2 @@
 # codes
-Leaning codes
+Leaning codes.
