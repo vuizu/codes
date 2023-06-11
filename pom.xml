@@ -10,8 +10,9 @@
     <packaging>pom</packaging>
     <modules>
         <module>basic</module>
+        <module>juc</module>
+        <module>jvm</module>
     </modules>
-
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -19,6 +20,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.openjdk.jol</groupId>
+                <artifactId>jol-core</artifactId>
+                <version>0.16</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

@@ -7,7 +7,13 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="basic" />
+        <module name="jvm" />
+        <module name="juc" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="flink" target="17" />
+      <module name="module-test1" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
