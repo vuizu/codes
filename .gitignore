@@ -1,5 +1,7 @@
-.vscode
+# .vscode
+cxx/output/
+target/
+
 .cache
 .venv
-pdfs
 build

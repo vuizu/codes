@@ -1,0 +1,8 @@
+FROM own/base
+
+RUN . /root/.bashrc && \
+    conda create -y --name rust rust -c conda-forge && \
+    echo 'conda activate rust' >> /root/.bashrc && \
+    conda clean --all -y
+
+WORKDIR /root

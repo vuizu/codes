@@ -1,0 +1,61 @@
+name: ai
+
+channels:
+  - anaconda
+  - conda-forge
+  - pytorch
+  - nvidia/label/cuda-11.8.0
+  - defaults
+
+dependencies:
+  # tvm-build
+  - python=3.8
+  - llvmdev
+  # For reducing TVM's build time.
+  # - ccache
+  # - conda-build
+  # - git
+  # - numpy
+  # - pytest
+  # - cython
+  # - cmake
+  # - bzip2
+  # - make
+  # - scipy
+  # - pillow
+
+  # 使用 ninja 时，需要libtool、binutils
+  # - ninja
+  # - libtool
+  # - binutils
+
+  # cuda: gcc version later than 11 are not supported!
+  # - gxx=11
+  # - clangxx
+  # 同时安装 libcxxabi
+  # - libcxx
+  # clangd 工具
+  # - clang-tools
+  # 使用 conda 安装的 cuda，在编译 tvm 时可能会出现找不到 cuda lib 的情况
+  # cuda-toolkit 与 cuda 只差 cuda、cuda-runtime、cuda-demo-suite
+  # - cuda-toolkit
+  # - cuda
+  # - rust
+
+
+  # pytorch: -c pytorch -c nvidia/label/cuda-11.8.0
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=11.8
+
+  # other
+  - numpy
+  - matplotlib
+  - decorator
+  - psutil
+  - typing_extensions
+  - packaging
+  - attrs
+  # conda install -n ai ipykernel --update-deps --force-reinstall
+  - ipykernel

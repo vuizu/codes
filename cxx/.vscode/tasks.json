@@ -1,0 +1,50 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "g++ build",
+            "type": "shell",
+            "command": "/usr/bin/g++",
+            "args": [
+                "-std=c++20",
+                // "-stdlib=libstdc++",
+                // -g 生成调试信息
+                "-g",
+                // -v 显示编译细节
+                "-v",
+                "-o",
+                "${workspaceFolder}/output/main",
+                "${file}"
+            ],
+            "group": "build",
+        },
+        {
+            "label": "clang++ build",
+            "type": "shell",
+            "command": "/usr/bin/clang++",
+            "args": [
+                "-std=c++20",
+                "-stdlib=libc++",
+                "-g",
+                "-o",
+                "${workspaceFolder}/output/main",
+                "${file}"
+            ],
+            "group": "build",
+        },
+        {
+            "label": "cuda build",
+            "type": "shell",
+            "command": "/usr/local/cuda/bin/nvcc",
+            "args": [
+                "-g",
+                "-o",
+                "${workspaceFolder}/output/main",
+                "${file}"
+            ],
+            "group": "build",
+        },
+    ]
+}

@@ -1,3 +1,7 @@
+# 容器主机上应该安装有 nvidia_container_toolkit，同时应具备显卡驱动。
+# plugins: coding prompt -> clangd
+#          cpp debug     -> C/C++
+#          cuda debug    -> Nsight Visual Studio Code Edition
 FROM ubuntu:22.04
 
 WORKDIR /root
@@ -22,21 +26,35 @@ RUN apt update && apt install -y \
     curl \
     git \
     vim \
-    # file \
+    tree \
     g++ \
-    # gdb \
+    clang \
+    libc++-dev \
+    libc++abi-dev \
+    gdb \
+    clangd \
+    # file \
     # cmake \
     # ninja-build \
-    # clang \
     # lldb 
-    clangd \
-    #     libomp-dev \
+    # libomp-dev \
     openssh-server && \
     # 释放一些空间，减小镜像体积
     apt clean && apt autoremove && rm -rf /var/lib/apt/lists/* /tmp/* 
 
 # g++-mips-linux-gnu
 # 应该有 vim 的基础配置
+
+# download the Miniconda3 installer
+# RUN mkdir /opt/miniconda3 && \
+#     wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/miniconda3/miniconda.sh && \
+#     # wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/miniconda3/miniconda.sh && \
+#     /bin/bash /opt/miniconda3/miniconda.sh -b -u -p /opt/miniconda3 && \
+#     rm -rf /opt/miniconda3/miniconda.sh && \
+#     /opt/miniconda3/bin/conda init bash && \
+#     /opt/miniconda3/bin/conda create -y --name venv python=3.8.10 && \
+#     echo 'conda activate venv' >> /root/.bashrc
+
 
 # configure environment path
 ENV BASHRC=/root/.bashrc
@@ -51,14 +69,6 @@ RUN wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86
     dpkg -r cuda-keyring && \
     rm -rf /etc/apt/sources.list.d/cuda*
 
-# download the Miniconda3 installer
-RUN mkdir /opt/miniconda3 && \
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/miniconda3/miniconda.sh && \
-    /bin/bash /opt/miniconda3/miniconda.sh -b -u -p /opt/miniconda3 && \
-    rm -rf /opt/miniconda3/miniconda.sh && \
-    /opt/miniconda3/bin/conda init bash && \
-    /opt/miniconda3/bin/conda create -y --name venv python=3.10.13 && \
-    echo 'conda activate venv' >> $BASHRC
 
 # configure lldb execution environment -> bug
 # RUN apt update && apt install -y lldb && \
@@ -66,8 +76,8 @@ RUN mkdir /opt/miniconda3 && \
 #     # 需要在 conda 的环境中安装 six 模块
 #     conda install -y six &&  conda clean --all && \
 #     # bug: linux 上 lldb 固定了模块的查找位置，需要软链接到正确位置，lldb -P 查看查找路径，将 llvm-14 的 lldb 目录连接到指定位置的 lldb 目录
-#     mkdir -p /usr/lib/local/lib/python3.10/dist-packages && \
-#     ln -fs /usr/lib/llvm-14/lib/python3.10/dist-packages/lldb /usr/lib/local/lib/python3.10/dist-packages
+#     mkdir -p /usr/lib/local/lib/python3.8/dist-packages && \
+#     ln -fs /usr/lib/llvm-14/lib/python3.8/dist-packages/lldb /usr/lib/local/lib/python3.10/dist-packages
 
 # pytorch
 # RUN . $BASHRC && \
@@ -81,12 +91,10 @@ RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
     echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config && \
     /etc/init.d/ssh restart
 
-# RUN apt clean && apt autoremove && rm -rf /var/lib/apt/lists/* /tmp/* 
-
 # CMD ["tail", "-F", "/dev/null"]
 CMD ["/usr/sbin/sshd", "-D"]
 
-# docker build -t development -f ./Dockerfile .
+# docker build -t env -f ./Dockerfile .
 # 生成容器命令
 # docker run \
 #           -d \
@@ -98,5 +106,3 @@ CMD ["/usr/sbin/sshd", "-D"]
 #           --security-opt seccomp=unconfined \
 #           --name develop_container \
 #           development
-
-# 容器主机上应该安装有 nvidia_container_toolkit，同时应具备显卡驱动。
