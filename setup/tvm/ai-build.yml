@@ -3,7 +3,8 @@ name: ai
 channels:
   - anaconda
   - conda-forge
-  - pytorch
+  # - pytorch
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch
   - nvidia/label/cuda-11.8.0
   - defaults
 
@@ -43,10 +44,11 @@ dependencies:
   # - rust
 
 
-  # pytorch: -c pytorch -c nvidia/label/cuda-11.8.0
-  - pytorch
-  - torchvision
-  - torchaudio
+  # 需要在容器开启 gpu 支持后，手动执行安装
+  # pytorch: conda install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=11.8 -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch -c nvidia/label/cuda-11.8.0
+  - pytorch==2.3.0
+  - torchvision==0.18.0
+  - torchaudio=2.3.0
   - pytorch-cuda=11.8
 
   # other

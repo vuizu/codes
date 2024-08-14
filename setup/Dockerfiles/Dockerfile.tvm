@@ -17,21 +17,7 @@ ARG RC=/root/.bashrc
 COPY ./setup/tvm ${BUILD_CONFIG_DIR}
 
 
-# 1. install CUDA on ubuntu22.04
-# FROM nvidia/cuda:11.8.0-devel-ubuntu22.04 is better
-# RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb && \
-#     dpkg -i cuda-keyring_1.0-1_all.deb && \
-#     rm -rf cuda-keyring_1.0-1_all.deb && \
-#     apt update && apt -y install cuda-11-8 && \
-#     dpkg -r cuda-keyring && \
-#     rm -rf /etc/apt/sources.list.d/cuda*
-# ENV PATH /usr/local/cuda/bin:$PATH
-# ENV LD_LIBRARY_PATH /usr/local/cuda/lib64:$LD_LIBRARY_PATH
-# 如果下载的网址是 ubuntu2204，则需要下句，否则会导致容器启动失败，或者直接使用 wsl-ubuntu
-# RUN rm -rf /usr/lib/x86_64-linux-gnu/libnvidia* /usr/lib/x86_64-linux-gnu/libcuda*
-
-
-# 2. install LLVM
+# 1. install LLVM
 # https://apt.llvm.org/
 # TVM requires LLVM for CPU codegen.
 # RUN apt update && apt install -y \
@@ -44,7 +30,7 @@ COPY ./setup/tvm ${BUILD_CONFIG_DIR}
 #     rm llvm.sh
 
 
-# 3. install python3.8
+# 2. install python3.8
 # RUN apt update && apt install -y libssl-dev && \
 #     # apt remove -y python3 && apt -y autoremove && \
 #     wget https://www.python.org/ftp/python/3.8.10/Python-3.8.10.tgz && \
@@ -57,7 +43,7 @@ COPY ./setup/tvm ${BUILD_CONFIG_DIR}
 #     rm -r /root/Python-3.8.10*
 
 
-# 4. create virtual environment from file
+# 3. create virtual environment from file
 # 使用 conda 安装 python3.8 和 LLVM，可以安装 CUDA
 ARG CONDA_VENV_FILE=${BUILD_CONFIG_DIR}/ai-build.yml
 RUN . ${RC} && conda env create -f ${CONDA_VENV_FILE} && \
@@ -65,7 +51,7 @@ RUN . ${RC} && conda env create -f ${CONDA_VENV_FILE} && \
     conda clean --all -y 
 
 
-# 5. build tvm
+# 4. build tvm
 ARG TVM_DIR=/opt/tvm
 ARG TVM_CMAKE_CONFIG_FILE=${BUILD_CONFIG_DIR}/config.cmake
 # (1) download tvm source code
@@ -78,8 +64,8 @@ RUN cp ${TVM_CMAKE_CONFIG_FILE} . && \
     . ${RC} && \
     cmake -G Ninja .. && ninja
 # cmake .. && make
-ENV TVM_HOME ${TVM_DIR}
-ENV PYTHONPATH ${TVM_HOME}/python:${PYTHONPATH}
+ENV TVM_HOME=${TVM_DIR}
+ENV PYTHONPATH=${TVM_HOME}/python:${PYTHONPATH}
 # Libraries have been installed in: /root/tvm/build/libbacktrace/lib
 
 # If you ever happen to want to link against installed libraries
