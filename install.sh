@@ -15,6 +15,7 @@ function cpp() {
     # --privileged: 使得容器可以对主机进行修改，降低容器的安全性和隔离性
     # --runtime nvidia: Versions earlier than Docker 19.03 used to require nvidia-docker2 and the --runtime=nvidia flag.
     # --gpus all: Since Docker 19.03, you need to install nvidia-container-toolkit package and then use the --gpus all flag.
+    # --cap-add CAP_SYS_PTRACE、 --security-opt seccomp=unconfined: gdb 调试所需
     docker run \
                 -d \
                 -p 2222:22 \

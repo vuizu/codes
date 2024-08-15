@@ -274,18 +274,19 @@ set(USE_EDGETPU OFF)
 # - ON: enable cuDNN with cmake's auto search in CUDA directory
 # - OFF: disable cuDNN (default)
 # - /path/to/cudnn: use specific path to cuDNN path
-set(USE_CUDNN OFF)
+set(USE_CUDNN ON)
 
 # Whether use cuDNN frontend
 # Possible values:
 # - ON: enable cuDNN frontend
 # - /path/to/cudnn_frontend: use specific path to cuDNN frontend
 # - OFF: disable cuDNN frontend (default)
+# https://github.com/NVIDIA/cudnn-frontend
 set(USE_CUDNN_FRONTEND OFF)
 
 # Whether use cuBLAS
 # OFF: (default)
-set(USE_CUBLAS OFF)
+set(USE_CUBLAS ON)
 
 # Whether use MIOpen
 # OFF: (default)

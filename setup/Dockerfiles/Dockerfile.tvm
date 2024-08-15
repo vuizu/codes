@@ -20,6 +20,7 @@ COPY ./setup/tvm ${BUILD_CONFIG_DIR}
 # 1. install LLVM
 # https://apt.llvm.org/
 # TVM requires LLVM for CPU codegen.
+# apt install lsb-release wget software-properties-common gnupg
 # RUN apt update && apt install -y \
 #     lsb-release \
 #     software-properties-common \
