@@ -52,7 +52,7 @@ set(USE_CUDA ON)
 # - ON: enable NCCL with cmake's auto search
 # - OFF: disable NCCL (default)
 # - /path/to/nccl: use specific path to nccl
-set(USE_NCCL OFF)
+set(USE_NCCL ON)
 
 # Whether to enable MSCCL support:
 # - ON: enable MSCCL
@@ -62,7 +62,7 @@ set(USE_MSCCL OFF)
 # Whether to enable NVTX support (must have USE_CUDA enabled):
 # - ON: enable NCCL with cmake's auto search
 # - OFF: disable NCCL (default)
-set(USE_NVTX OFF)
+set(USE_NVTX ON)
 
 # Whether enable ROCM runtime
 #
@@ -182,7 +182,7 @@ set(USE_MICRO_STANDALONE_RUNTIME OFF)
 #        which is needed for most cases (default)
 # - /path/to/llvm-config: enable specific LLVM when multiple llvm-dev is available.
 # 
-# 使用 --link-static 后，生成的动态库就不会依赖系统的 LLVM 了
+# 使用 --link-static 后，最终生成的动态库就不会依赖系统的 LLVM 了
 # If you are a PyTorch user, it is recommended to set (USE_LLVM "/path/to/llvm-config --link-static")
 # and set(HIDE_PRIVATE_SYMBOLS ON) to avoid potential symbol conflicts between different version LLVM
 # used by TVM and PyTorch.
@@ -192,7 +192,7 @@ set(HIDE_PRIVATE_SYMBOLS ON)
 # Whether use MLIR to help analyze, requires USE_LLVM is enabled
 # Possible values: ON/OFF
 # OFF: (default)
-set(USE_MLIR OFF)
+set(USE_MLIR ON)
 
 #---------------------------------------------
 # Contrib libraries
@@ -208,7 +208,7 @@ set(USE_BYODT_POSIT OFF)
 
 # Whether use BLAS, choices: openblas, atlas, apple
 # none: (default)
-set(USE_BLAS none)
+set(USE_BLAS "openblas")
 
 # Whether to use MKL
 # Possible values:
@@ -240,7 +240,7 @@ set(USE_AMX OFF)
 # Whether use OpenMP thread pool, choices: gnu, intel
 # Note: "gnu" uses gomp library, "intel" uses iomp5 library
 # none: (default)
-set(USE_OPENMP none)
+set(USE_OPENMP "gnu")
 
 # Whether use contrib.random in runtime
 # ON: (default)
@@ -282,7 +282,7 @@ set(USE_CUDNN ON)
 # - /path/to/cudnn_frontend: use specific path to cuDNN frontend
 # - OFF: disable cuDNN frontend (default)
 # https://github.com/NVIDIA/cudnn-frontend
-set(USE_CUDNN_FRONTEND OFF)
+set(USE_CUDNN_FRONTEND /usr/local/lib/python3.8/dist-packages)
 
 # Whether use cuBLAS
 # OFF: (default)
@@ -348,9 +348,9 @@ set(USE_CMSISNN OFF)
 # USE_TENSORRT_RUNTIME - Support for running TensorRT compiled modules, requires presense of
 #                        TensorRT library. OFF/ON/"path/to/TensorRT"
 # OFF: (default)
-set(USE_TENSORRT_CODEGEN OFF)
+set(USE_TENSORRT_CODEGEN ON)
 # OFF: (default)
-set(USE_TENSORRT_RUNTIME OFF)
+set(USE_TENSORRT_RUNTIME /usr/local/tensorrt)
 
 # Whether use VITIS-AI codegen
 # OFF: (default)
@@ -407,7 +407,7 @@ set(USE_THRUST OFF)
 
 # Whether use cuRAND
 # OFF: (default)
-set(USE_CURAND OFF)
+set(USE_CURAND ON)
 
 # Whether to build the TensorFlow TVMDSOOp module
 # OFF: (default)

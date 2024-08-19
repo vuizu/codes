@@ -1,0 +1,89 @@
+FROM ubuntu:20.04
+
+RUN echo 'root:123' | chpasswd
+
+COPY ./apt-install /usr/local/bin/apt-install
+
+RUN apt-install ca-certificates && \
+    sed -i \
+    -e 's#http://archive.ubuntu.com/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu/#' \
+    -e 's#http://security.ubuntu.com/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu/#' \
+    /etc/apt/sources.list
+
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt update --fix-missing && apt -y upgrade && \
+    apt install -y \
+    tzdata \
+    wget \
+    curl \
+    git \
+    vim \
+    openssh-server && \
+    ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
+    echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config && \
+    /etc/init.d/ssh restart
+
+# in serveral stages are better.
+COPY ./modules /modules
+COPY ./.vimrc /root
+
+
+# Pip3
+RUN bash /modules/InstallPipPkgs.sh
+
+
+# Pytorch
+ARG TORCH_VERSION
+ARG TORCHVISION_VERSION
+ARG TORCHAUDIO_VERSION
+ARG IDX_URL
+RUN bash /modules/InstallPytorch.sh ${TORCH_VERSION} ${TORCHVISION_VERSION} ${TORCHAUDIO_VERSION} ${IDX_URL}
+
+
+# CUDA
+ARG CUDA_INSTALL_PATH
+ARG CUDA_DASH_VERSION
+ARG CUDNN_VERSION
+RUN bash /modules/nvidia/InstallCUDA.sh ${CUDA_INSTALL_PATH} ${CUDA_DASH_VERSION} ${CUDNN_VERSION}
+ENV PATH=${CUDA_INSTALL_PATH}/bin:${PATH}
+ENV LD_LIBRARY_PATH=${CUDA_INSTALL_PATH}/lib64
+
+
+# NCCL 
+ARG NCCL_VERSION
+RUN bash /modules/nvidia/InstallNCCL.sh ${NCCL_VERSION}
+
+
+# TensorRT
+ARG TENSORRT_INSTALL_PATH
+ARG TENSORRT_MAJOR_VERSION
+ARG TENSORRT_MINOR_VERSION
+ARG CUDA_SHORT_VERSION
+ARG PY_MINOR_VERSION
+RUN bash /modules/nvidia/InstallTensorRT.sh ${TENSORRT_INSTALL_PATH} ${TENSORRT_MAJOR_VERSION} ${TENSORRT_MINOR_VERSION} ${CUDA_SHORT_VERSION} ${PY_MINOR_VERSION}
+ENV LD_LIBRARY_PATH=${TENSORRT_INSTALL_PATH}/lib:${LD_LIBRARY_PATH}
+
+
+# CMake
+ARG CMAKE_INSTALL_PATH
+ARG CMAKE_MAJOR_VERSION
+ARG CMAKE_MINOR_VERSION
+RUN bash /modules/tools/InstallCMake.sh ${CMAKE_INSTALL_PATH} ${CMAKE_MAJOR_VERSION} ${CMAKE_MINOR_VERSION}
+ENV PATH=${CMAKE_INSTALL_PATH}/bin:${PATH}
+
+
+# Other 
+RUN bash /modules/tools/InstallOtherTools.sh
+
+
+# TVM
+# COPY ./config.cmake /tmp
+# ARG TVM_INSTALL_PATH
+# RUN bash /modules/InstallTVM.sh ${TVM_INSTALL_PATH}
+# ENV TVM_HOME=${TVM_INSTALL_PATH}
+# ENV PYTHONPATH=${TVM_HOME}/python:${PYTHONPATH}
+
+WORKDIR /root
+CMD ["/usr/sbin/sshd", "-D"]

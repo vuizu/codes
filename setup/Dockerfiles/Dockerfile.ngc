@@ -1,0 +1,67 @@
+FROM nvcr.io/nvidia/pytorch:22.12-py3
+
+RUN echo 'root:123' | chpasswd
+
+RUN apt update && apt install -y ca-certificates && \
+    sed -i \
+    -e 's#http://archive.ubuntu.com/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu/#' \
+    -e 's#http://security.ubuntu.com/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu/#' \
+    /etc/apt/sources.list
+
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt update --fix-missing && apt -y upgrade && \
+    apt install -y \
+    tzdata \
+    wget \
+    vim \
+    openssh-server && \
+    ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
+    echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config && \
+    /etc/init.d/ssh restart
+
+WORKDIR /usr/local/lib
+RUN ln -sf libtbb.so.12.7 lib.so.12 && \
+    ln -sf libtbb.so.12 libtbb.so && \
+    ln -sf libtbbbind.so.3.7 libtbbbind.so.3 && \
+    ln -sf libtbbbind.so.3 libtbbbind.so && \
+    ln -sf libtbbbind_2_0.so.3.7 libtbbbind_2_0.so.3 && \
+    ln -sf libtbbbind_2_0.so.3 libtbbbind_2_0.so && \
+    ln -sf libtbbbind_2_5.so.3.7 libtbbbind_2_5.so.3 && \
+    ln -sf libtbbbind_2_5.so.3 libtbbbind_2_5.so && \
+    ln -sf libtbbbindmalloc.so.2.7 libtbbbindmalloc.so.2 && \
+    ln -sf libtbbbindmalloc.so.2 libtbbbindmalloc.so && \
+    ln -sf libtbbbindmalloc_proxy.so.2.7 libtbbbindmalloc_proxy.so.2 && \
+    ln -sf libtbbbindmalloc_proxy.so.2 libtbbbindmalloc_proxy.so
+
+
+
+RUN apt update && apt install -y \
+    git \
+    wget \
+    g++ \
+    cmake \
+    ccache \
+    ninja-build \
+    zlib1g-dev \
+    libopenblas-dev \
+    libzstd-dev \
+    libxml2-dev && \
+    apt clean
+
+ARG BUILD_CONFIG_DIR=/tmp/setup
+COPY ./setup/tvm ${BUILD_CONFIG_DIR}
+
+ARG TVM_DIR=/opt/tvm
+ARG TVM_CMAKE_CONFIG_FILE=${BUILD_CONFIG_DIR}/config.cmake
+RUN git clone --recursive https://github.com/apache/tvm ${TVM_DIR}
+WORKDIR ${TVM_DIR}/build
+RUN cp ${TVM_CMAKE_CONFIG_FILE} . && \
+    cmake -G Ninja .. && ninja
+ENV TVM_HOME=${TVM_DIR}
+ENV PYTHONPATH=${TVM_HOME}/python
+
+WORKDIR /root
+CMD ["/usr/sbin/sshd", "-D"]

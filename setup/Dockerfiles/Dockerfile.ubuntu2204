@@ -1,0 +1,230 @@
+FROM ubuntu:22.04
+
+RUN echo 'root:123' | chpasswd
+
+RUN apt update && apt install -y ca-certificates && \
+    sed -i \
+    -e 's#http://archive.ubuntu.com/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu/#' \
+    -e 's#http://security.ubuntu.com/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu/#' \
+    /etc/apt/sources.list
+
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt update --fix-missing && apt -y upgrade && \
+    apt install -y \
+    tzdata \
+    wget \
+    vim \
+    openssh-server && \
+    ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
+    echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config && \
+    /etc/init.d/ssh restart
+
+ARG RC=/root/.bashrc
+COPY ./setup/.vimrc /root
+
+
+# 3. conda
+WORKDIR /opt/miniconda3
+ARG CONDA=/opt/miniconda3/bin/conda
+RUN wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
+    /bin/bash miniconda.sh -b -u -p . && \
+    rm -rf miniconda.sh && \
+    ${CONDA} init bash
+
+# RUN . ${RC} && conda create --name ai \
+#     python=3.8 \
+#     llvmdev=14 \
+#     python-cudnn-frontend \
+#     numpy \
+#     matplotlib \
+#     decorator \
+#     psutil \
+#     typing_extensions \
+#     packaging \
+#     attrs \
+#     ipykernel \
+#     -c conda-forge -c anaconda && \
+#     echo 'conda activate ai' >> ${RC} && \
+#     conda clean --all -y
+# RUN . ${RC} && conda install -y \
+#     pytorch==2.3.0 \
+#     torchvision==0.18.0 \
+#     torchaudio==2.3.0 \
+#     pytorch-cuda=11.8 \
+#     -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch -c nvidia/label/cuda-11.8.0 && \
+#     conda clean --all -y
+
+RUN ${CONDA} create --name ai \
+    python=3.8 \
+    llvmdev=14 \
+    -c conda-forge && \
+    echo 'conda activate ai' >> ${RC} && \
+    ${CONDA} clean --all -y
+
+
+# 4. pytorch
+RUN . ${RC} && pip3 install \
+    torch==2.4.0 \
+    torchvision==0.19.0 \
+    torchaudio==2.4.0 \
+    --no-cache-dir \
+    -i https://download.pytorch.org/whl/cu118
+
+
+# other module
+RUN . ${RC} && pip3 install \
+    ipykernel \
+    numpy \
+    attrs \
+    nvidia-cudnn-frontend \
+    --no-cache-dir \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+
+# 1. cuda
+ARG CUDA_HOME=/usr/local/cuda
+RUN wget https://developer.download.nvidia.cn/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    rm -rf cuda-keyring_1.1-1_all.deb && \
+    apt update && apt -y install cuda-toolkit-11-8  && \
+    dpkg -r cuda-keyring && \
+    dpkg --purge cuda-keyring
+ENV PATH=${CUDA_HOME}/bin:$PATH
+ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64
+
+
+# 2. cuDNN、nccl
+ARG CUDNN_VERSION=8.7.0.84-1+cuda11.8
+ARG NCCL_VERSION=2.15.5-1+cuda11.8
+RUN wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    rm -rf cuda-keyring_1.1-1_all.deb && \
+    apt update && apt -y install \
+    # cuDNN
+    libcudnn8=${CUDNN_VERSION} \
+    libcudnn8-dev=${CUDNN_VERSION} \
+    # NCCL
+    libnccl2=${NCCL_VERSION} \
+    libnccl-dev=${NCCL_VERSION} && \
+    # TVM: set(CUDA_CUDNN_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
+    mv /usr/include/cudnn* ${CUDA_HOME}/include && \
+    dpkg -r cuda-keyring && \
+    dpkg --purge cuda-keyring
+
+
+# TensorRT
+# https://developer.nvidia.com/nvidia-tensorrt-8x-download
+# https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-861/install-guide/index.html#installing-tar
+ARG TENSORRT_HOME=/usr/local/tensorrt
+ARG TENSORRT_MAJOR_VERSION=8.6.1
+ARG TENSORRT_MINOR_VERSION=6
+ARG TENSORRT_VERSION=${TENSORRT_MAJOR_VERSION}.${TENSORRT_MINOR_VERSION}
+ARG CUDA_VERSION=11.8
+ARG TENSORRT_SUFFIX=${TENSORRT_MAJOR_VERSION}-1+cuda${TENSORRT_CUDA_VERSION}
+RUN wget https://developer.nvidia.cn/downloads/compute/machine-learning/tensorrt/secure/${TENSORRT_MAJOR_VERSION}/tars/TensorRT-${TENSORRT_VERSION}.Linux.x86_64-gnu.cuda-${CUDA_VERSION}.tar.gz && \
+    tar -zxf TensorRT-${TENSORRT_VERSION}.Linux.x86_64-gnu.cuda-${CUDA_VERSION}.tar.gz && \
+    mv TensorRT-${TENSORRT_SUFFIX} ${TENSORRT_HOME} && \
+    cp ${TENSORRT_HOME}/include/* /usr/include && \
+    # echo '/usr/local/tensorrt/lib' > /etc/ld.so.conf.d/tensorrt.conf && \
+    . ${RC} && pip3 install \
+    ${TENSORRT_HOME}/python/tensorrt-*-cp38-none-linux_x86_64.whl \
+    ${TENSORRT_HOME}/python/tensorrt_lean-*-cp38-none-linux_x86_64.whl \
+    ${TENSORRT_HOME}/python/tensorrt_dispatch-*-cp38-none-linux_x86_64.whl && \
+    rm -rf TensorRT-*.tar.gz
+ENV LD_LIBRARY_PATH=/usr/local/tensorrt/lib:$LD_LIBRARY_PATH
+ 
+
+# 5. build tvm
+RUN apt update && apt install -y \
+    git \
+    wget \
+    g++ \
+    cmake \
+    ccache \
+    ninja-build \
+    zlib1g-dev \
+    libopenblas-dev \
+    libzstd-dev \
+    libxml2-dev && \
+    apt clean
+
+ARG BUILD_CONFIG_DIR=/tmp/setup
+COPY ./setup/tvm ${BUILD_CONFIG_DIR}
+
+ARG TVM_DIR=/opt/tvm
+ARG TVM_CMAKE_CONFIG_FILE=${BUILD_CONFIG_DIR}/config.cmake
+RUN git clone --recursive https://github.com/apache/tvm ${TVM_DIR}
+WORKDIR ${TVM_DIR}/build
+RUN cp ${TVM_CMAKE_CONFIG_FILE} . && \
+    # . ${RC} && \
+    cmake -G Ninja .. && ninja
+ENV TVM_HOME=${TVM_DIR}
+ENV PYTHONPATH=${TVM_HOME}/python
+
+
+# 6. cxx
+RUN apt update && apt install -y \
+    git \
+    vim \
+    less \
+    file \
+    g++ \
+    gdb \
+    clang \
+    clangd \
+    cmake \
+    ninja-build \
+    ccache \
+    # 安装 omp 头文件
+    libomp-dev \
+    libc++-dev \
+    libc++abi-dev && \
+    apt clean
+
+
+# 7. rust
+RUN ${CONDA} install -y rust && \
+    conda clean --all -y
+
+
+WORKDIR /root
+CMD ["/usr/sbin/sshd", "-D"]
+
+# total: 3326.5s
+# docker build -t own/base -f ./setup/Dockerfile .
+# docker run \
+#           -d \
+#           -p 2222:22 \
+#           -v $(pwd)/cxx:/root/cxx \
+#           --gpus all \
+#           --memory 20G \
+#           --memory-swap 20G \
+#           --cap-add CAP_SYS_PTRACE \
+#           --security-opt seccomp=unconfined \
+#           --name dev \
+#           own/base
+
+
+# docker run \
+#           -d \
+#           -p 3333:22 \
+#           -v $(pwd)/tvm:/root/tvm \
+#           --gpus all \
+#           --memory 20G \
+#           --memory-swap 20G \
+#           --cap-add CAP_SYS_PTRACE \
+#           --security-opt seccomp=unconfined \
+#           --name tvm-dev \
+#           own/base
+
+
+# docker run \
+#           -d \
+#           -p 4444:22 \
+#           -v $(pwd)/rust:/root/rust \
+#           --memory 20G \
+#           --memory-swap 20G \
+#           --name rust-dev \
+#           own/base
