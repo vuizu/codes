@@ -1,59 +1,15 @@
-import os, sys, json, subprocess
+import os
+import sys
+import json
+import subprocess
 
-
-config = {
-    'nvidia': {
-        'cuda': {
-            'version': {
-                'dash': '11-8',
-                'short': '11.8',
-                'long': '11.8.0'
-            },
-            'path': '/usr/local/cuda'
-        },
-        'cudnn': {
-            'version': {
-                'major': '8.7.0',
-                'minor': '84-1'
-            }
-        },
-        'nccl': {
-            'path': '/usr/local/nccl',
-            'version': '2.15.5-1+cuda11.8'
-        },
-        'tensorrt': {
-            'version': {
-                'major': '8.6.1',
-                'minor': '6'
-            },
-            'path': '/usr/local/tensorrt'
-        }
-    },
-    'tools': {
-        'cmake': {
-            'version': {
-                'major': '3.20',
-                'minor': '6'
-            },
-            'path': '/usr/local/cmake'
-        }
-    },
-    'tvm': {
-        'path': '/usr/local/tvm'  
-    },
-    'pytorch': {
-        'torch': '2.3.0',
-        'torchvision': '0.18.0',
-        'torchaudio': '2.3.0',
-        'idx_url': 'https://download.pytorch.org/whl/cu118'
-    }
-}
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
 setup_dir = root_dir + "/setup"
 file = setup_dir + "/Dockerfiles/Dockerfile.ubuntu2004"
 resources_dir = setup_dir + "/resources"
 image_name = "own/dev"
+# image_name = "test"
 
 
 def check_and_install_docker() -> bool:
@@ -62,7 +18,7 @@ def check_and_install_docker() -> bool:
         return True
     except ImportError:
         # or "python3 -m pip install --break-system-packages docker -i https://pypi.tuna.tsinghua.edu.cn/simple"
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "docker"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple", "docker"])
         return False
 
 def check_and_install_progress() -> bool:
@@ -71,7 +27,7 @@ def check_and_install_progress() -> bool:
         return True
     except ImportError:
         # or "python3 -m pip install --break-system-packages tqdm alive_progress -i https://pypi.tuna.tsinghua.edu.cn/simple"
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "alive_progress"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple", "alive_progress"])
         return False
 
 
@@ -87,51 +43,20 @@ def exec(cmd, shell=True, check=True, stderr=None,
 
 
 def build_image(cli):
-    pytorch = config['pytorch']
-    tvm = config['tvm']
-
-    cuda = config['nvidia']['cuda']
-    cudnn = config['nvidia']['cudnn']
-    nccl = config['nvidia']['nccl']
-    tr = config['nvidia']['tensorrt']
-
-    cmake = config['tools']['cmake']
-
+    """
+        docker build -t own/dev -f ./Dockerfiles/Dockerfile.ubuntu2004 resouces
+    """
     try:
         cli.images.get(image_name)
         print("image already exists.")
     except ImageNotFound:
         print("building image...")
-        # docker build -t own/dev -f file resources_dir
-
         # image, logs = cli.images.build(...)
         for line in alive_it(cli.api.build(
             # -t
             tag=image_name,
             # --build-arg
             buildargs={
-               'TORCH_VERSION': pytorch['torch'],
-               'TORCHVISION_VERSION': pytorch['torchvision'],
-               'TORCHAUDIO_VERSION': pytorch['torchaudio'],
-               'IDX_URL': pytorch['idx_url'],
-
-               'CUDA_INSTALL_PATH': cuda['path'],
-               'CUDA_DASH_VERSION': cuda['version']['dash'],
-               'CUDNN_VERSION': f'{cudnn['version']['major']}.{cudnn['version']['minor']}+cuda{cuda['version']['short']}',
-               'NCCL_VERSION': nccl['version'],
-
-               'TENSORRT_INSTALL_PATH': tr['path'],
-               'TENSORRT_MAJOR_VERSION': tr['version']['major'],
-               'TENSORRT_MINOR_VERSION': tr['version']['minor'],
-               'CUDA_SHORT_VERSION': cuda['version']['short'],
-               # 'PY_MINOR_VERSION': f'{sys.version_info.minor}',
-               'PY_MINOR_VERSION': '8',
-
-               'CMAKE_INSTALL_PATH': cmake['path'],
-               'CMAKE_MAJOR_VERSION': cmake['version']['major'],
-               'CMAKE_MINOR_VERSION': cmake['version']['minor'],
-               
-               # 'TVM_INSTALL_PATH': tvm['path']
             },
             rm=True,
             dockerfile=file,
@@ -150,6 +75,20 @@ def build_image(cli):
 
 
 def create_container(cli):
+    """
+        docker run \
+                -d \
+                -p 6666:22 \
+                -p 8888:8888 \
+                -v $(pwd)/cxx:/root/cxx \
+                --gpus all \
+                --memory 20G \
+                --memory-swap 20G \
+                --cap-add CAP_SYS_PTRACE \
+                --security-opt seccomp=unconfined \
+                --name dev \
+                own/dev
+    """
     obj = None
     try:
         obj = cli.containers.get('dev')
@@ -161,7 +100,8 @@ def create_container(cli):
             # -d 
             detach=True,
             # -p
-            ports={ '22/tcp': ('0.0.0.0', 6666) },
+            ports={ '22/tcp'  : ('0.0.0.0', 6666),
+                    '8888/tcp': ('0.0.0.0', 8888) },
             # -v 
             volumes=[f"{root_dir}/cxx:/root/cxx"],
             # --gpus all
@@ -199,6 +139,7 @@ def delete_all(ALL=False):
 
 
 if __name__ == "__main__":
+    # apt install python3-venv && python3 -m venv venv && source venv/bin/activate
     if check_and_install_docker() and check_and_install_progress():
         import docker
         from docker.types import DeviceRequest
@@ -208,7 +149,7 @@ if __name__ == "__main__":
 
         cli = docker.from_env()
 
-        # build_image(cli)
-        obj = create_container(cli)
+        build_image(cli)
+        # obj = create_container(cli)
 
         # delete_all(True)

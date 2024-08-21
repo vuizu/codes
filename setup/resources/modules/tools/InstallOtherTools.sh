@@ -2,8 +2,14 @@ set -eux
 set -o pipefail
 
 apt-install \
+    git \
+    vim \
+    wget \
+    curl \
     less \
     file \
+    tree \
+    unzip \
     clangd \
     g++ \
     clang \

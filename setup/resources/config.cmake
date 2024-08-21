@@ -52,7 +52,7 @@ set(USE_CUDA ON)
 # - ON: enable NCCL with cmake's auto search
 # - OFF: disable NCCL (default)
 # - /path/to/nccl: use specific path to nccl
-set(USE_NCCL ON)
+set(USE_NCCL OFF)
 
 # Whether to enable MSCCL support:
 # - ON: enable MSCCL
@@ -159,11 +159,11 @@ set(USE_GRAPH_EXECUTOR ON)
 
 # Whether enable tiny graph executor with CUDA Graph
 # OFF: (default)
-set(USE_GRAPH_EXECUTOR_CUDA_GRAPH OFF)
+set(USE_GRAPH_EXECUTOR_CUDA_GRAPH ON)
 
 # Whether enable pipeline executor.
 # OFF: (default)
-set(USE_PIPELINE_EXECUTOR OFF)
+set(USE_PIPELINE_EXECUTOR ON)
 
 # Whether to enable the profiler for the graph executor and vm
 # ON: (default)
@@ -274,7 +274,7 @@ set(USE_EDGETPU OFF)
 # - ON: enable cuDNN with cmake's auto search in CUDA directory
 # - OFF: disable cuDNN (default)
 # - /path/to/cudnn: use specific path to cuDNN path
-set(USE_CUDNN ON)
+set(USE_CUDNN /usr/local/cudnn)
 
 # Whether use cuDNN frontend
 # Possible values:
@@ -518,7 +518,7 @@ set(USE_GTEST AUTO)
 # Enable using CUTLASS as a BYOC backend
 # Need to have USE_CUDA=ON
 # OFF: (default)
-set(USE_CUTLASS OFF)
+set(USE_CUTLASS ON)
 
 # Whether to enable FlashInfer or not.
 # OFF: (default)
@@ -551,7 +551,7 @@ set(SUMMARIZE OFF)
 # To enable pass the path to the root libtorch (or PyTorch) directory
 # OFF or /path/to/torch/
 # OFF: (default)
-set(USE_LIBTORCH OFF)
+set(USE_LIBTORCH /usr/local/libtorch)
 
 # Whether to use the Universal Modular Accelerator Interface
 # OFF: (default)

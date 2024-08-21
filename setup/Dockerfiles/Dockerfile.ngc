@@ -1,8 +1,11 @@
 FROM nvcr.io/nvidia/pytorch:22.12-py3
+# ubuntu20.04 + cuda11.8 + cuDNN8.7.0.84 + NCCL2.15.5 + TensorRT 8.5.1.7 + pytorch1.14.0a0+410ce96
 
 RUN echo 'root:123' | chpasswd
 
-RUN apt update && apt install -y ca-certificates && \
+COPY ./apt-install /usr/local/bin/apt-install
+
+RUN apt-install ca-certificates && \
     sed -i \
     -e 's#http://archive.ubuntu.com/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu/#' \
     -e 's#http://security.ubuntu.com/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu/#' \
@@ -10,7 +13,7 @@ RUN apt update && apt install -y ca-certificates && \
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update --fix-missing && apt -y upgrade && \
-    apt install -y \
+    apt-install \
     tzdata \
     wget \
     vim \
@@ -23,7 +26,8 @@ RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
     /etc/init.d/ssh restart
 
 WORKDIR /usr/local/lib
-RUN ln -sf libtbb.so.12.7 lib.so.12 && \
+# /sbin/ldconfig.real: /usr/local/lib/libxxx is not a symbolic link
+RUN ln -sf libtbb.so.12.7 libtbb.so.12 && \
     ln -sf libtbb.so.12 libtbb.so && \
     ln -sf libtbbbind.so.3.7 libtbbbind.so.3 && \
     ln -sf libtbbbind.so.3 libtbbbind.so && \
@@ -31,14 +35,13 @@ RUN ln -sf libtbb.so.12.7 lib.so.12 && \
     ln -sf libtbbbind_2_0.so.3 libtbbbind_2_0.so && \
     ln -sf libtbbbind_2_5.so.3.7 libtbbbind_2_5.so.3 && \
     ln -sf libtbbbind_2_5.so.3 libtbbbind_2_5.so && \
-    ln -sf libtbbbindmalloc.so.2.7 libtbbbindmalloc.so.2 && \
-    ln -sf libtbbbindmalloc.so.2 libtbbbindmalloc.so && \
-    ln -sf libtbbbindmalloc_proxy.so.2.7 libtbbbindmalloc_proxy.so.2 && \
-    ln -sf libtbbbindmalloc_proxy.so.2 libtbbbindmalloc_proxy.so
+    ln -sf libtbbmalloc.so.2.7 libtbbmalloc.so.2 && \
+    ln -sf libtbbmalloc.so.2 libtbbmalloc.so && \
+    ln -sf libtbbmalloc_proxy.so.2.7 libtbbmalloc_proxy.so.2 && \
+    ln -sf libtbbmalloc_proxy.so.2 libtbbmalloc_proxy.so
 
 
-
-RUN apt update && apt install -y \
+RUN apt-install \
     git \
     wget \
     g++ \
@@ -49,19 +52,20 @@ RUN apt update && apt install -y \
     libopenblas-dev \
     libzstd-dev \
     libxml2-dev && \
+    llvm-dev \
     apt clean
 
-ARG BUILD_CONFIG_DIR=/tmp/setup
-COPY ./setup/tvm ${BUILD_CONFIG_DIR}
-
-ARG TVM_DIR=/opt/tvm
-ARG TVM_CMAKE_CONFIG_FILE=${BUILD_CONFIG_DIR}/config.cmake
-RUN git clone --recursive https://github.com/apache/tvm ${TVM_DIR}
-WORKDIR ${TVM_DIR}/build
-RUN cp ${TVM_CMAKE_CONFIG_FILE} . && \
-    cmake -G Ninja .. && ninja
-ENV TVM_HOME=${TVM_DIR}
-ENV PYTHONPATH=${TVM_HOME}/python
+# ARG BUILD_CONFIG_DIR=/tmp/setup
+# COPY ./setup/tvm ${BUILD_CONFIG_DIR}
+# 
+# ARG TVM_DIR=/opt/tvm
+# ARG TVM_CMAKE_CONFIG_FILE=${BUILD_CONFIG_DIR}/config.cmake
+# RUN git clone --recursive https://github.com/apache/tvm ${TVM_DIR}
+# WORKDIR ${TVM_DIR}/build
+# RUN cp ${TVM_CMAKE_CONFIG_FILE} . && \
+#     cmake -G Ninja .. && ninja
+# ENV TVM_HOME=${TVM_DIR}
+# ENV PYTHONPATH=${TVM_HOME}/python
 
 WORKDIR /root
 CMD ["/usr/sbin/sshd", "-D"]

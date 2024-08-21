@@ -19,7 +19,7 @@ CUDA_SHORT_VERSION=$3
 NCCL_SUFFIX=${NCCL_VERSION}-1+cuda${CUDA_SHORT_VERSION}_x86_64
 wget https://developer.nvidia.cn/compute/machine-learning/nccl/secure/${NCCL_VERSION}/agnostic/x64/nccl_${NCCL_SUFFIX}.txz && \
     tar -xJf nccl_${NCCL_SUFFIX}.txz && \
-    mv  nccl_${NCCL_SUFFIX} ${NCCL_HOME} && \
+    mv nccl_${NCCL_SUFFIX} ${NCCL_HOME} && \
     cp ${NCCL_HOME}/include/* /usr/include/ &&\
     echo ${NCCL_HOME}/lib > /etc/ld.so.conf.d/nccl.conf && \
     rm -rf nccl*

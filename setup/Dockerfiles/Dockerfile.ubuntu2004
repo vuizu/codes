@@ -12,12 +12,8 @@ RUN apt-install ca-certificates && \
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update --fix-missing && apt -y upgrade && \
-    apt install -y \
+    apt-install \
     tzdata \
-    wget \
-    curl \
-    git \
-    vim \
     openssh-server && \
     ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
@@ -26,64 +22,81 @@ RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
     /etc/init.d/ssh restart
 
 # in serveral stages are better.
-COPY ./modules /modules
+# COPY ./modules /modules
 COPY ./.vimrc /root
 
-
-# Pip3
-RUN bash /modules/InstallPipPkgs.sh
-
-
-# Pytorch
-ARG TORCH_VERSION
-ARG TORCHVISION_VERSION
-ARG TORCHAUDIO_VERSION
-ARG IDX_URL
-RUN bash /modules/InstallPytorch.sh ${TORCH_VERSION} ${TORCHVISION_VERSION} ${TORCHAUDIO_VERSION} ${IDX_URL}
+ARG WORKSPACE=/usr/local
+WORKDIR ${WORKSPACE}
 
 
-# CUDA
-ARG CUDA_INSTALL_PATH
-ARG CUDA_DASH_VERSION
-ARG CUDNN_VERSION
-RUN bash /modules/nvidia/InstallCUDA.sh ${CUDA_INSTALL_PATH} ${CUDA_DASH_VERSION} ${CUDNN_VERSION}
-ENV PATH=${CUDA_INSTALL_PATH}/bin:${PATH}
-ENV LD_LIBRARY_PATH=${CUDA_INSTALL_PATH}/lib64
-
-
-# NCCL 
-ARG NCCL_VERSION
-RUN bash /modules/nvidia/InstallNCCL.sh ${NCCL_VERSION}
-
-
-# TensorRT
-ARG TENSORRT_INSTALL_PATH
-ARG TENSORRT_MAJOR_VERSION
-ARG TENSORRT_MINOR_VERSION
-ARG CUDA_SHORT_VERSION
-ARG PY_MINOR_VERSION
-RUN bash /modules/nvidia/InstallTensorRT.sh ${TENSORRT_INSTALL_PATH} ${TENSORRT_MAJOR_VERSION} ${TENSORRT_MINOR_VERSION} ${CUDA_SHORT_VERSION} ${PY_MINOR_VERSION}
-ENV LD_LIBRARY_PATH=${TENSORRT_INSTALL_PATH}/lib:${LD_LIBRARY_PATH}
-
-
-# CMake
-ARG CMAKE_INSTALL_PATH
-ARG CMAKE_MAJOR_VERSION
-ARG CMAKE_MINOR_VERSION
-RUN bash /modules/tools/InstallCMake.sh ${CMAKE_INSTALL_PATH} ${CMAKE_MAJOR_VERSION} ${CMAKE_MINOR_VERSION}
-ENV PATH=${CMAKE_INSTALL_PATH}/bin:${PATH}
-
-
-# Other 
+# CMD tools
+COPY ./tools/InstallOtherTools.sh /modules/tools/
 RUN bash /modules/tools/InstallOtherTools.sh
 
 
+# CMake
+ARG CMAKE_INSTALL_PATH=${WORKSPACE}/cmake
+COPY ./tools/InstallCMake.sh /modules/tools/
+RUN bash /modules/tools/InstallCMake.sh ${CMAKE_INSTALL_PATH}
+ENV PATH=${CMAKE_INSTALL_PATH}/bin:${PATH}
+
+
+# GTest
+COPY ./tools/InstallGTest.sh /modules/tools/
+RUN bash /modules/tools/InstallGTest.sh
+
+
+# Pip3
+COPY ./InstallPipPkgs.sh /modules/
+RUN bash /modules/InstallPipPkgs.sh
+
+
+# CUDA、cuDNN
+ARG CUDA_MAJOR_VERSION=11
+ARG CUDA_MINOR_VERSION=8
+ARG CUDA_PATCH_VERSION=0
+
+ARG CUDA_INSTALL_PATH=${WORKSPACE}/cuda
+ARG CUDNN_INSTALL_PATH=${WORKSPACE}/cudnn
+COPY ./nvidia/InstallCUDA.sh /modules/nvidia/
+RUN bash /modules/nvidia/InstallCUDA.sh
+ENV PATH=${CUDA_INSTALL_PATH}/bin:${PATH}
+ENV LD_LIBRARY_PATH=${CUDA_INSTALL_PATH}/lib64:${CUDNN_INSTALL_PATH}/lib
+ENV CXX_INCLUDE_DIRS=${CUDNN_INSTALL_PATH}/include
+
+
+# NCCL 
+# ARG NCCL_INSTALL_HOME=${WORKSPACE}/nccl
+# COPY ./nvidia/InstallNCCL.sh /modules/nvidia/
+# RUN bash /modules/nvidia/InstallNCCL.sh
+
+
+# TensorRT
+ARG TENSORRT_INSTALL_PATH=${WORKSPACE}/tensorrt
+COPY ./nvidia/InstallTensorRT.sh /modules/nvidia/
+RUN bash /modules/nvidia/InstallTensorRT.sh ${CUDA_MAJOR_VERSION} ${CUDA_MINOR_VERSION}
+ENV LD_LIBRARY_PATH=${TENSORRT_INSTALL_PATH}/lib:${LD_LIBRARY_PATH}
+ENV CXX_INCLUDE_DIRS=${TENSORRT_INSTALL_PATH}/include:${CXX_INCLUDE_DIRS}
+
+
+# Pytorch
+ARG LIBTORCH_INSTALL_PATH=${WORKSPACE}/libtorch
+COPY ./InstallPytorch.sh /modules/
+RUN bash /modules/InstallPytorch.sh ${CUDA_MAJOR_VERSION} ${CUDA_MINOR_VERSION}
+ENV CXX_INCLUDE_DIRS=${LIBTORCH_INSTALL_PATH}/include:${CXX_INCLUDE_DIRS}
+
+
 # TVM
-# COPY ./config.cmake /tmp
-# ARG TVM_INSTALL_PATH
-# RUN bash /modules/InstallTVM.sh ${TVM_INSTALL_PATH}
-# ENV TVM_HOME=${TVM_INSTALL_PATH}
-# ENV PYTHONPATH=${TVM_HOME}/python:${PYTHONPATH}
+COPY ./config.cmake /tmp
+ARG TVM_INSTALL_PATH=${WORKSPACE}/tvm
+COPY ./InstallTVM.sh /modules/
+RUN bash /modules/InstallTVM.sh \
+    ${CUDA_INSTALL_PATH} \
+    ${CUDNN_INSTALL_PATH} \
+    ${TENSORRT_INSTALL_PATH} \
+    ${LIBTORCH_INSTALL_PATH}
+ENV TVM_HOME=${TVM_INSTALL_PATH}
+ENV PYTHONPATH=${TVM_HOME}/python:${PYTHONPATH}
 
 WORKDIR /root
 CMD ["/usr/sbin/sshd", "-D"]
