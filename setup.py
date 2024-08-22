@@ -3,6 +3,8 @@ import sys
 import json
 import subprocess
 
+# git config --global user.email "thq23333@gmail.com"
+# git config --global user.name "ntwd"
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
 setup_dir = root_dir + "/setup"
