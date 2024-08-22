@@ -79,11 +79,6 @@ RUN wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86
 #     mkdir -p /usr/lib/local/lib/python3.8/dist-packages && \
 #     ln -fs /usr/lib/llvm-14/lib/python3.8/dist-packages/lldb /usr/lib/local/lib/python3.10/dist-packages
 
-# pytorch
-# RUN . $BASHRC && \
-#     conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y && \
-#     conda clean --all
-
 # pycuda -> conda install pycuda
 
 # 该容器允许远程连接，需要安装 sshd 服务

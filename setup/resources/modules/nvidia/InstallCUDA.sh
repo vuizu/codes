@@ -1,8 +1,8 @@
 set -eux
 set -o pipefail
 
-CUDA_MAJOR_VERSION=11
-CUDA_MINOR_VERSION=8
+CUDA_MAJOR_VERSION=$1
+CUDA_MINOR_VERSION=$2
 wget https://developer.download.nvidia.cn/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb && \
     dpkg -i cuda-keyring_1.1-1_all.deb && \
     rm -rf cuda-keyring_1.1-1_all.deb && \

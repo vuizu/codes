@@ -1,0 +1,37 @@
+Index:
+  Background: Build
+
+# Diagnostics:
+#   ClangTidy:
+#     Add: ["*"]
+#     Remoev: 
+
+CompileFlags:
+  Add:
+    - -std=c++2a
+  Compiler: g++
+
+---
+If:
+  PathMatch: [.*\.cpp]
+  PathExclude: []
+CompileFlags:
+  Add: 
+    # treat all files as C++
+    - -xc++
+    # enable more warnings
+    - -Wall
+  # strip all other warning-related flags
+  # Remove: -W*
+  Compiler: clang++
+
+---
+If:
+  PathMatch: .*\.cu
+CompileFlags:
+  Add: 
+    - -std=c++17
+    # - -I/usr/local/cudnn/include
+    # - -I/usr/local/libtorch/include
+    # - --include-directory=/usr/local/tensorrt/include
+  Compiler: nvcc

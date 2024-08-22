@@ -1,5 +1,5 @@
 # .vscode
-cxx/output/
+src/cxx/output/*
 target/
 
 .cache

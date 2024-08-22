@@ -1,1 +1,5 @@
+#!/bin/bash
+set -eu
+set -o pipefail
+
 apt update --fix-missing && apt install --no-install-recommends -y $@ && apt clean

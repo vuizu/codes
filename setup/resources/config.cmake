@@ -518,7 +518,7 @@ set(USE_GTEST AUTO)
 # Enable using CUTLASS as a BYOC backend
 # Need to have USE_CUDA=ON
 # OFF: (default)
-set(USE_CUTLASS ON)
+set(USE_CUTLASS OFF)
 
 # Whether to enable FlashInfer or not.
 # OFF: (default)

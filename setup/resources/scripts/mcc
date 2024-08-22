@@ -1,0 +1,29 @@
+#!/bin/bash
+set -eu
+set -o pipefail
+
+INCLUDE_FLAGS=$(echo $CXX_INCLUDE_DIRS | sed 's/:/ -I/g')
+echo "INCLUDE_FLAGS: -I${INCLUDE_FLAGS}"
+
+compiler=$1; shift
+case $compiler in
+    gcc)
+        gcc -I$INCLUDE_FLAGS $@
+    ;;
+    g++)
+        g++ -I$INCLUDE_FLAGS $@
+    ;;
+    clang)
+        clang -I$INCLUDE_FLAGS $@
+    ;;
+    clang++)
+        clang++ -I$INCLUDE_FLAGS $@
+    ;;
+    nvcc)
+        nvcc -I$INCLUDE_FLAGS $@
+    ;;
+    *)
+        echo "the first arg must be [ gcc | g++ | clang | clang++ | nvcc ]"
+        exit -1
+    ;;
+esac

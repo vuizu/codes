@@ -103,7 +103,7 @@ def create_container(cli):
             ports={ '22/tcp'  : ('0.0.0.0', 6666),
                     '8888/tcp': ('0.0.0.0', 8888) },
             # -v 
-            volumes=[f"{root_dir}/cxx:/root/cxx"],
+            volumes=[f"{root_dir}/src/cxx:/root/cxx"],
             # --gpus all
             device_requests=[
                 DeviceRequest(
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
         cli = docker.from_env()
 
-        build_image(cli)
-        # obj = create_container(cli)
+        # build_image(cli)
+        obj = create_container(cli)
 
         # delete_all(True)

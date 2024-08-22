@@ -10,15 +10,16 @@ apt-install \
     file \
     tree \
     unzip \
-    clangd \
     g++ \
-    clang \
     gdb \
-    libomp-dev \
-    libc++-dev \
-    libc++abi-dev \
     ccache \
+    net-tools \
     ninja-build \
-    llvm-dev \
     zlib1g-dev \
-    libopenblas-dev
+    libopenblas-dev 
+    # clang \
+    # clangd \
+    # llvm-dev \
+    # libomp-dev \
+    # libc++-dev \
+    # libc++abi-dev \
