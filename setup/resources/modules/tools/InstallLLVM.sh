@@ -14,6 +14,7 @@ apt-install \
     libomp-${LLVM_VERSION}-dev \
     libc++-${LLVM_VERSION}-dev \
     libc++abi-${LLVM_VERSION}-dev \
+    libpolly-${LLVM_VERSION}-dev \
 
 rm -rf /etc/apt/sources.list.d/llvm.list /etc/apt/trusted.gpg.d/apt.llvm.org.asc && \
 cd /usr/bin && \
@@ -21,4 +22,3 @@ cd /usr/bin && \
     ln -sf clang++-${LLVM_VERSION} clang++ && \
     ln -sf clangd-${LLVM_VERSION} clangd && \
     ln -sf llvm-config-${LLVM_VERSION} llvm-config
-

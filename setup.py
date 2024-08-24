@@ -67,7 +67,7 @@ def build_image(cli):
             json_obj = json.loads(line.decode('utf-8'))
             log = json_obj.get('stream', json_obj.get('aux'))
             print(log)
-            if log is not None and any(kw in log for kw in ["ERROR", "FAILED"]):
+            if log is not None and any(kw in log for kw in ["ERROR", "FAILED", "fatal"]):
                 print("build failure!!!")
                 sys.exit(-1)
 
@@ -82,7 +82,7 @@ def create_container(cli):
                 -d \
                 -p 6666:22 \
                 -p 8888:8888 \
-                -v $(pwd)/cxx:/root/cxx \
+                -v $(pwd)/src:/root/src \
                 --gpus all \
                 --memory 20G \
                 --memory-swap 20G \
@@ -105,7 +105,7 @@ def create_container(cli):
             ports={ '22/tcp'  : ('0.0.0.0', 6666),
                     '8888/tcp': ('0.0.0.0', 8888) },
             # -v 
-            volumes=[f"{root_dir}/src/cxx:/root/cxx"],
+            volumes=[f"{root_dir}/src:/root/src"],
             # --gpus all
             device_requests=[
                 DeviceRequest(

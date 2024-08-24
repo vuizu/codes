@@ -1,19 +1,18 @@
 set -eux
 set -o pipefail
 
-PIP_MIRROR=https://pypi.tuna.tsinghua.edu.cn/simple
-apt-install python3-pip && \
-    python3 -m pip install --upgrade --no-cache-dir -i ${PIP_MIRROR} pip && \
+pip3-install --upgrade pip && \
     ln -s /usr/bin/python3 /usr/bin/python
 
 # jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root
-pip3 install \
+pip3-install \
     whl \
-    ipykernel \
-    notebook \
+    numpy==1.24.4 \
+    ipykernel==6.29.5 \
+    numba \
+    pycuda==2024.1.2 \
+    notebook==7.2.1 \
+    matplotlib \
     nvidia-cudnn-frontend \
     tqdm \
-    alive_progress \
-    matplotlib \
-    --no-cache-dir \
-    -i ${PIP_MIRROR}
+    alive_progress

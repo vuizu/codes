@@ -2,8 +2,9 @@ set -eux
 set -o pipefail
 
 BUILD_DIR=tvm/build
-git clone --recursive https://github.com/apache/tvm tvm
+git clone --recursive https://github.com/apache/tvm tvm 
 
+# git checkout v0.17.0
 mkdir ${BUILD_DIR} && cp /tmp/config.cmake ${BUILD_DIR} && cd ${BUILD_DIR}
 
 CUDA_HOME=$1

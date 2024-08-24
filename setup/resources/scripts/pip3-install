@@ -1,0 +1,7 @@
+#!/bin/bash
+set -eu
+set -o pipefail
+
+# conda env
+# . $HOME/.bashrc && \
+python3 -m pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple $@

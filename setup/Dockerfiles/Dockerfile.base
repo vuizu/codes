@@ -1,0 +1,27 @@
+FROM ubuntu:20.04
+
+RUN echo 'root:123' | chpasswd
+
+COPY ./scripts/apt-install /usr/local/bin/apt-install
+COPY ./scripts/pip3-install /usr/local/bin/pip3-install
+
+RUN apt-install ca-certificates && \
+    sed -i \
+    -e 's#http://archive.ubuntu.com/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu/#' \
+    -e 's#http://security.ubuntu.com/ubuntu/#https://mirrors.ustc.edu.cn/ubuntu/#' \
+    /etc/apt/sources.list
+
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt update --fix-missing && apt -y upgrade && \
+    apt-install \
+    tzdata \
+    openssh-server && \
+    ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
+    echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config && \
+    /etc/init.d/ssh restart
+
+COPY ./.vimrc /root
+
+CMD ["/usr/sbin/sshd", "-D"]

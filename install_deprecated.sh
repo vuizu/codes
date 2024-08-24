@@ -5,7 +5,7 @@
 set -eux
 set -o pipefail
 
-function cpp() {
+cpp() {
     # 最后的 `.` 表示当前目录作为上下文路径
     # ~/codes 为当前目录
     docker build -t own/base -f ./setup/Dockerfiles/Dockerfile.base .

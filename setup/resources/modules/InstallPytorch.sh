@@ -5,11 +5,10 @@ TORCH_VERSION=2.3.0
 TORCHVISION_VERSION=0.18.0
 TORCHAUDIO_VERSION=2.3.0
 CUDA_VERSION=cu${1}${2}
-pip3 install \
+pip3-install \
     torch==${TORCH_VERSION} \
     torchvision==${TORCHVISION_VERSION} \
     torchaudio==${TORCHAUDIO_VERSION} \
-    --no-cache-dir \
     -i https://download.pytorch.org/whl/${CUDA_VERSION}
 
 

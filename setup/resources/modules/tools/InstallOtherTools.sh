@@ -16,7 +16,11 @@ apt-install \
     net-tools \
     ninja-build \
     zlib1g-dev \
-    libopenblas-dev 
+    libopenblas-dev \
+    libzstd-dev \
+    python3-dev \
+    python3-pip \
+    python3-venv
     # clang \
     # clangd \
     # llvm-dev \

@@ -2,6 +2,11 @@
 set -eu
 set -o pipefail
 
+if [ $# -eq 0 ]; then
+    echo 'arg must >= 1'
+    exit
+fi
+
 INCLUDE_FLAGS=$(echo $CXX_INCLUDE_DIRS | sed 's/:/ -I/g')
 echo "INCLUDE_FLAGS: -I${INCLUDE_FLAGS}"
 
