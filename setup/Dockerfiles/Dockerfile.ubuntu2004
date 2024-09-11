@@ -9,6 +9,7 @@ RUN echo 'root:123' | chpasswd
 
 COPY ./scripts/apt-install /usr/local/bin/apt-install
 COPY ./scripts/pip3-install /usr/local/bin/pip3-install
+COPY ./scripts/notebook /usr/local/bin/notebook
 
 RUN apt-install ca-certificates && \
     sed -i \
@@ -41,13 +42,15 @@ RUN /bin/bash /modules/tools/InstallOtherTools.sh
 # CMake
 ARG CMAKE_INSTALL_PATH=${WORKSPACE}/cmake
 COPY ./modules/tools/InstallCMake.sh /modules/tools/
-RUN /bin/bash /modules/tools/InstallCMake.sh ${CMAKE_INSTALL_PATH}
+RUN /bin/bash /modules/tools/InstallCMake.sh
 ENV PATH=${CMAKE_INSTALL_PATH}/bin:${PATH}
 
 
 # XMake
+ARG XMAKE_INSTALL_PATH=${WORKSPACE}/xmake
 COPY ./modules/tools/InstallXMake.sh /modules/tools/
-RUN /bin/bash /modules/tools/InstallXMake.sh
+RUN /bin/bash /modules/tools/InstallXMake.sh ${XMAKE_INSTALL_PATH}
+ENV XMAKE_ROOT=y
 
 
 # GTest
@@ -58,11 +61,6 @@ RUN /bin/bash /modules/tools/InstallGTest.sh
 # LLVM
 COPY ./modules/tools/InstallLLVM.sh /modules/tools/
 RUN /bin/bash /modules/tools/InstallLLVM.sh
-
-
-# PipPkgs
-COPY ./modules/InstallPipPkgs.sh /modules/
-RUN /bin/bash /modules/InstallPipPkgs.sh
 
 
 # CUDA
@@ -85,12 +83,9 @@ ENV LD_LIBRARY_PATH=${CUDNN_INSTALL_PATH}/lib:${LD_LIBRARY_PATH}
 ENV CXX_INCLUDE_DIRS=${CUDNN_INSTALL_PATH}/include:${CXX_INCLUDE_DIRS}
 
 
-# TensorRT
-ARG TENSORRT_INSTALL_PATH=${WORKSPACE}/tensorrt
-COPY ./modules/nvidia/InstallTensorRT.sh /modules/nvidia/
-RUN /bin/bash /modules/nvidia/InstallTensorRT.sh ${CUDA_MAJOR_VERSION} ${CUDA_MINOR_VERSION}
-ENV LD_LIBRARY_PATH=${TENSORRT_INSTALL_PATH}/lib:${LD_LIBRARY_PATH}
-ENV CXX_INCLUDE_DIRS=${TENSORRT_INSTALL_PATH}/include:${CXX_INCLUDE_DIRS}
+# PipPkgs
+COPY ./modules/InstallPipPkgs.sh /modules/
+RUN /bin/bash /modules/InstallPipPkgs.sh
 
 
 # Pytorch
@@ -101,17 +96,25 @@ ENV CXX_INCLUDE_DIRS=${LIBTORCH_INSTALL_PATH}/include:${CXX_INCLUDE_DIRS}
 
 
 # cuda-python
-ARG CUDA_PYTHON_INSTALL_PATH=${WORKSPACE}/cuda-python
+ARG CUDAPYTHON_INSTALL_PATH=${WORKSPACE}/cuda-python
 COPY ./modules/nvidia/InstallCUDAPython.sh /modules/nvidia/
 RUN /bin/bash /modules/nvidia/InstallCUDAPython.sh ${CUDA_INSTALL_PATH}
-ENV PYTHONPATH=${CUDA_PYTHON_INSTALL_PATH}:${PYTHONPATH}
+ENV PYTHONPATH=${CUDAPYTHON_INSTALL_PATH}
+
+
+# TensorRT
+ARG TENSORRT_INSTALL_PATH=${WORKSPACE}/tensorrt
+COPY ./modules/nvidia/InstallTensorRT.sh /modules/nvidia/
+RUN /bin/bash /modules/nvidia/InstallTensorRT.sh ${CUDA_MAJOR_VERSION} ${CUDA_MINOR_VERSION}
+ENV LD_LIBRARY_PATH=${TENSORRT_INSTALL_PATH}/lib:${LD_LIBRARY_PATH}
+ENV CXX_INCLUDE_DIRS=${TENSORRT_INSTALL_PATH}/include:${CXX_INCLUDE_DIRS}
 
 
 # TVM
 COPY ./config.cmake /tmp
 ARG TVM_INSTALL_PATH=${WORKSPACE}/tvm
 COPY ./modules/InstallTVM.sh /modules/
-# COPY ./tvm ./tvm
+COPY ./tvm ./tvm
 RUN /bin/bash /modules/InstallTVM.sh \
     ${CUDA_INSTALL_PATH} \
     ${CUDNN_INSTALL_PATH} \
@@ -122,13 +125,13 @@ ENV PYTHONPATH=${TVM_HOME}/python:${PYTHONPATH}
 
 
 # Rust
-COPY ./modules/InstallRust.sh /modules/
-RUN /bin/bash /modules/InstallRust.sh
+# COPY ./modules/InstallRust.sh /modules/
+# RUN /bin/bash /modules/InstallRust.sh
 
 
 # Mojo
-COPY ./modules/InstallMojo.sh /modules/
-RUN /bin/bash /modules/InstallMojo.sh
+# COPY ./modules/InstallMojo.sh /modules/
+# RUN /bin/bash /modules/InstallMojo.sh
 
 
 RUN rm -rf /modules

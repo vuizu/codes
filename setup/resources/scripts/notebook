@@ -1,0 +1,37 @@
+#!/bin/bash
+set -eu
+set -o pipefail
+
+cmd=start
+if [ $# -eq 1 ]; then
+    cmd=$1
+fi
+
+is_running=$(ps -ef | grep jupyter-notebook | grep -v grep)
+
+case $cmd in
+    start)
+        if [[ -z $is_running ]]; then
+            nohup jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root > /var/jupyter.logs 2>&1 &
+            echo "jupyter is started"
+        else
+            echo "jupyter notebook is running!!!"
+        fi
+    ;;
+    stop)
+        if [[ -z $is_running ]]; then
+            echo "jupyter notebook is not running!!!"
+        else
+            echo $is_running
+            echo "Please input pids which need to kill: "
+            read pids
+            kill $pids
+            echo "jupyter is stopped"
+        fi
+    ;;
+    status)
+        echo $is_running
+        ;;
+    *)
+    ;;
+esac

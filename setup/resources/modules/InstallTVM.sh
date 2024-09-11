@@ -2,7 +2,7 @@ set -eux
 set -o pipefail
 
 BUILD_DIR=tvm/build
-git clone --recursive https://github.com/apache/tvm tvm 
+# git clone --recursive https://github.com/apache/tvm tvm 
 
 # git checkout v0.17.0
 mkdir ${BUILD_DIR} && cp /tmp/config.cmake ${BUILD_DIR} && cd ${BUILD_DIR}
@@ -20,6 +20,7 @@ sed -i \
     config.cmake
 
 
+# 编译成功后，可能会导致 OSError: /usr/local/tvm/build/libtvm.so: undefined symbol，需要重新编译
 cmake \
     -DCAFFE2_USE_CUDNN=ON \
     -DCUDNN_LIBRARY_PATH=${CUDNN_HOME}/lib \

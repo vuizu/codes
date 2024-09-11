@@ -14,7 +14,9 @@ apt-install \
     libomp-${LLVM_VERSION}-dev \
     libc++-${LLVM_VERSION}-dev \
     libc++abi-${LLVM_VERSION}-dev \
-    libpolly-${LLVM_VERSION}-dev \
+    libmlir-${LLVM_VERSION}-dev \
+    mlir-${LLVM_VERSION}-tools \
+    libpolly-${LLVM_VERSION}-dev
 
 rm -rf /etc/apt/sources.list.d/llvm.list /etc/apt/trusted.gpg.d/apt.llvm.org.asc && \
 cd /usr/bin && \

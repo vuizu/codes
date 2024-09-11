@@ -15,4 +15,6 @@ pip3-install \
     matplotlib \
     nvidia-cudnn-frontend \
     tqdm \
-    alive_progress
+    alive_progress \
+    sympy \
+    pandas

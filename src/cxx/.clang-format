@@ -54,7 +54,7 @@ AllowShortLoopsOnASingleLine: true
 # 只有空的Blocks能放一行
 AllowShortBlocksOnASingleLine: Empty
 # Lambda 表达式可以一行
-AllowShortLambdasOnASingleLine: Inline
+AllowShortLambdasOnASingleLine: All
 
 
 # =============================================== 换行 break 配置
@@ -78,6 +78,7 @@ BraceWrapping:
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
+BreakAfterAttributes: Always
 
 
 # =============================================== 空格 space 配置
@@ -112,7 +113,7 @@ SpaceBeforeParensOptions:
 # SpaceBeforeRangeBasedForLoopColon: false
 
 # 空白代码块
-SpaceInEmptyBlock: true
+SpaceInEmptyBlock: false 
 
 # 只会影响每一行后面的行注释
 SpacesBeforeTrailingComments: 4

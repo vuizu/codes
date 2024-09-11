@@ -4,4 +4,8 @@ target/
 
 .cache
 .venv
-build
+
+# .xmake
+build/
+.xmake
+packages

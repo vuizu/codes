@@ -46,7 +46,7 @@ def exec(cmd, shell=True, check=True, stderr=None,
 
 def build_image(cli):
     """
-        docker build -t own/dev -f ./Dockerfiles/Dockerfile.ubuntu2004 resouces
+        docker build -t own/dev -f ./setup/Dockerfiles/Dockerfile.ubuntu2004 ./setup/resources
     """
     try:
         cli.images.get(image_name)
